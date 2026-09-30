@@ -1,0 +1,35 @@
+name: Autotests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:   # кнопка ручного запуску на GitHub
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run tests
+        run: pytest --html=report.html --self-contained-html
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            report.html
+            allure-results/
+            test-results/
